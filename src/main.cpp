@@ -23,10 +23,6 @@ void on_center_button() {
  * to keep execution time for this mode under a few seconds.
  */
 void initialize() {
-	pros::lcd::initialize();
-	pros::lcd::set_text(1, "Hello PROS User!");
-
-	pros::lcd::register_btn1_cb(on_center_button);
 }
 
 /**
@@ -58,7 +54,32 @@ void competition_initialize() {}
  * will be stopped. Re-enabling the robot will restart the task, not re-start it
  * from where it left off.
  */
-void autonomous() {}
+
+void best_auton() {
+  // intentionally empty
+}
+
+void simple_auton() {
+  // intentionally empty
+}
+
+void good_auton() {
+  // intentionally empty
+}
+
+
+rd::Selector selector("Auton Selector", {
+    {"Best auton", best_auton, LV_COLOR_RED},
+    {"Simple auton", simple_auton, LV_COLOR_BLUE},
+    {"Good auton", good_auton, LV_COLOR_GREEN}
+});
+
+
+
+
+void autonomous() {
+	selector.run_auton();
+}
 
 /**
  * Runs the operator control code. This function will be started in its own task
@@ -73,33 +94,53 @@ void autonomous() {}
  * operator control task will be stopped. Re-enabling the robot will restart the
  * task, not resume it from where it left off.
  */
+
+
+ 
 void opcontrol() {
 	pros::Controller master(pros::E_CONTROLLER_MASTER);
-	// Change motor ports later
-	pros::MotorGroup left_mg({1, -2, 3});    // Creates a motor group with forwards ports 1 & 3 and reversed port 2
-	pros::MotorGroup right_mg({-4, 5, -6});  // Creates a motor group with forwards port 5 and reversed ports 4 & 6
 
-	//remember to set the gearing of the motors here!!!!
+	pros::MotorGroup left_mg({-11, -12, -13});
+  	pros::MotorGroup right_mg({18, 19, 20});
 
 	while (true) {
 		// Tank Control Scheme
 		double left_speed = master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
-		double right_speed = master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_Y)
+		double right_speed = master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_Y);
 
 		left_mg.move(left_speed);
 		right_mg.move(right_speed);
 		pros::delay(20);
 
 	}
+	
+	/*
+	  pros::Controller master(pros::E_CONTROLLER_MASTER);
 
+  // MotorGroups with reversed left side
+  pros::MotorGroup left_mg({-11, -12, -13});
+  pros::MotorGroup right_mg({18, 19, 20});
 
+  // Exponential drive function (nested)
+  auto exponentialDrive = [](double input) {
+    double normalized = input / 127.0;
+    double abs_x = std::abs(normalized);
+    double y = 1.2 * std::pow(1.043, abs_x * 100.0) - 1.2 + 0.2 * abs_x;
+    y *= (normalized >= 0) ? 1 : -1;
+    return y * 127.0;
+  };
 
+  while (true) {
+    double left_input = master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
+    double right_input = master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_Y);
 
-	//while (true) {
-		//pros::lcd::print(0, "%d %d %d", (pros::lcd::read_buttons() & LCD_BTN_LEFT) >> 2,
-		               //  (pros::lcd::read_buttons() & LCD_BTN_CENTER) >> 1,
-		                // (pros::lcd::read_buttons() & LCD_BTN_RIGHT) >> 0);  // Prints status of the emulated screen LCDs
+    double left_speed = exponentialDrive(left_input);
+    double right_speed = exponentialDrive(right_input);
 
-		
-	//}
+    left_mg.move(left_speed);
+    right_mg.move(right_speed);
+
+    pros::delay(20);
+  }
+	*/
 }
